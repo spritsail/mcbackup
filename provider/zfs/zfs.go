@@ -13,7 +13,7 @@ import (
 type ZfsProvider struct {
 	Dataset    string `long:"zfs-dataset" description:"Dataset/volume name" env:"ZFS_DATASET" required:"true"`
 	Recursive  bool   `long:"zfs-recursive" description:"Should snapshots be recursive" env:"ZFS_SNAPSHOT_RECURSE"`
-	DateFormat string `long:"zfs-date-format" description:"Format for snapshot names" env:"ZFS_DATE_FORMAT" default:"%F-%H:%M:%S"`
+	DateFormat string `long:"zfs-date-format" description:"Format for snapshot names" env:"ZFS_DATE_FORMAT" default:"%F-%H:%M"`
 }
 
 func New(args []string) (p provider.Provider, remain []string, err error) {

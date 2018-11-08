@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/jessevdk/go-flags"
+	"github.com/seeruk/minecraft-rcon/rcon"
 	"github.com/sirupsen/logrus"
 	"github.com/spritsail/mcbackup/config"
 	"github.com/spritsail/mcbackup/mcbackup"
@@ -29,8 +30,10 @@ func main() {
 	// so that they can be re-parsed by the provider.
 	parser := flags.NewParser(&opts, flags.IgnoreUnknown|flags.HelpFlag)
 	parser.Name = "mcbackup"
+	// Required to prevent default action of single backup
+	parser.SubcommandsOptional = true
 
-	remain, err := parser.ParseArgs(os.Args)
+	remain, err := parser.ParseArgs(os.Args[1:])
 	if err != nil {
 		log.Error(err)
 		parser.WriteHelp(os.Stdout)
@@ -62,10 +65,30 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Start the backup process
-	err = mcbackup.New(prov, &opts).Run()
-
+	log.Debug("creating client")
+	client, err := rcon.NewClient(
+		opts.Host,
+		int(opts.Port),
+		opts.Password,
+	)
 	if err != nil {
-		log.Fatal(err)
+		logrus.WithField("prefix", "rcon").Error(err)
+		log.Fatal("error creating client")
+	}
+
+	mcb := mcbackup.New(prov, client, &opts)
+	switch parser.Active {
+	case nil:
+		log.Info("running a single backup")
+		mcb.RunOnce()
+		break
+	default:
+		cmd := parser.Active.Name
+		switch cmd {
+		case "cron":
+			mcb.Cron()
+		default:
+			log.Fatalf("unknown command '%s'", cmd)
+		}
 	}
 }
