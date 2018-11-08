@@ -22,12 +22,13 @@ func init() {
 func main() {
 	var opts config.GlobalOpts
 
-	log := logrus.WithField("prefix", "mcbackup")
+	log := logrus.WithField("prefix", "main")
 	log.Printf("mcbackup, version %s", Version)
 
 	// Parse global commandline options, ignoring anything unknown
 	// so that they can be re-parsed by the provider.
-	parser := flags.NewParser(&opts, flags.IgnoreUnknown)
+	parser := flags.NewParser(&opts, flags.IgnoreUnknown|flags.HelpFlag)
+	parser.Name = "mcbackup"
 
 	remain, err := parser.ParseArgs(os.Args)
 	if err != nil {
@@ -52,8 +53,9 @@ func main() {
 	}
 
 	// Any extraneous values not consumed by the provider WILL throw and error here
+	// Create new parser to parse remaining options, catching unknown arguments
 	var empty struct{}
-	_, err = flags.ParseArgs(&empty, remain)
+	_, err = flags.NewParser(&empty, 0).ParseArgs(remain)
 	if err != nil {
 		log.Error(err)
 		parser.WriteHelp(os.Stdout)
