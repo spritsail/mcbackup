@@ -50,10 +50,13 @@ func (zp *ZfsProvider) TakeBackup() error {
 
 	// Take the snapshot and return the error if any
 	snap, err := dataset.Snapshot(zp.genSnapshotName(), zp.Recursive)
+	if err != nil {
+		return err
+	}
 	log.Infof("snapshot %s created, %s refer size", snap.Name,
 		humanize.Bytes(snap.Referenced))
 
-	return err
+	return nil
 }
 
 func (zp *ZfsProvider) genSnapshotName() string {
