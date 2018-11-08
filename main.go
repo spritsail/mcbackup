@@ -11,6 +11,8 @@ import (
 	"os"
 )
 
+var Version string
+
 func init() {
 	logrus.SetFormatter(&prefixed.TextFormatter{
 		FullTimestamp: true,
@@ -22,7 +24,8 @@ func init() {
 func main() {
 	var opts config.GlobalOpts
 
-	log := logrus.WithField("prefix", "main")
+	log := logrus.WithField("prefix", "mcbackup")
+	log.Printf("mcbackup, version %s", Version)
 
 	// Parse global commandline options, ignoring anything unknown
 	// so that they can be re-parsed by the provider.
