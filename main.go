@@ -4,9 +4,8 @@ import (
 	"github.com/jessevdk/go-flags"
 	"github.com/sirupsen/logrus"
 	"github.com/spritsail/mcbackup/config"
-	"github.com/spritsail/mcbackup/provider"
+	"github.com/spritsail/mcbackup/mcbackup"
 	providers "github.com/spritsail/mcbackup/provider/load"
-	"github.com/spritsail/mcbackup/rcon"
 	"github.com/x-cray/logrus-prefixed-formatter"
 	"os"
 )
@@ -18,7 +17,6 @@ func init() {
 		FullTimestamp: true,
 	})
 	logrus.SetLevel(logrus.DebugLevel)
-	logrus.WithField("prefix", "main")
 }
 
 func main() {
@@ -63,48 +61,9 @@ func main() {
 	}
 
 	// Start the backup process
-	err = Run(prov, &opts)
-}
+	err = mcbackup.New(prov, &opts).Run()
 
-func Run(p provider.Provider, opts *config.GlobalOpts) (err error) {
-	log := logrus.WithField("prefix", "rcon")
-
-	log.Debug("creating client")
-	client, err := rcon.CreateClient(opts)
 	if err != nil {
-		log.Warn("error creating client")
-		return
+		log.Fatal(err)
 	}
-
-	// Disable automatic saving
-	output, err := client.SendCommand("save-off")
-	log.Info(output)
-	if err == nil {
-
-		// Manually save before taking backup
-		output, err = client.SendCommand("save-all")
-		log.Info(output)
-		if err != nil {
-			log.Error(err)
-			log.Warn("saving failed, attempting to re-enable saving")
-		} else {
-
-			// Take a backup if saving succeeded
-			err = p.TakeBackup()
-			if err != nil {
-				// Log the error but continue to re-enable saving.
-				// Saving shouldn't ever be left disabled
-				log.Warn(err)
-			}
-		}
-	}
-
-	// Always re-enable automatic saving
-	output, err = client.SendCommand("save-on")
-	if err != nil {
-		return
-	}
-	log.Info(output)
-
-	return
 }
