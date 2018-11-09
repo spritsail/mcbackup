@@ -4,9 +4,10 @@ import (
 	strftime "github.com/cactus/gostrftime"
 	"github.com/dustin/go-humanize"
 	"github.com/jessevdk/go-flags"
-	"github.com/mistifyio/go-zfs"
+	"github.com/lorenz/go-libzfs"
 	"github.com/sirupsen/logrus"
 	"github.com/spritsail/mcbackup/provider"
+	"strconv"
 	"time"
 )
 
@@ -25,7 +26,8 @@ func New(args []string) (p provider.Provider, remain []string, err error) {
 		return
 	}
 
-	_, err = zfs.GetDataset(zfsOpts.Dataset)
+	d, err := zfs.DatasetOpen(zfsOpts.Dataset)
+	defer d.Close()
 	if err != nil {
 		return
 	}
@@ -37,24 +39,22 @@ func New(args []string) (p provider.Provider, remain []string, err error) {
 func (zp *ZfsProvider) TakeBackup() error {
 	log := logrus.WithField("prefix", "zfs")
 
-	log.Debugf("finding zfs dataset %s", zp.Dataset)
-
-	// Obtain a handle to the dataset
-	// This occurs every time to ensure the dataset still exists
-	dataset, err := zfs.GetDataset(zp.Dataset)
-	if err != nil {
-		return err
-	}
-
 	log.Info("taking zfs snapshot")
 
 	// Take the snapshot and return the error if any
-	snap, err := dataset.Snapshot(zp.genSnapshotName(), zp.Recursive)
+	snapName := zp.Dataset + "@" + zp.genSnapshotName()
+	props := make(map[zfs.Prop]zfs.Property)
+	snap, err := zfs.DatasetSnapshot(snapName, zp.Recursive, props)
 	if err != nil {
 		return err
 	}
-	log.Infof("snapshot %s created, %s refer size", snap.Name,
-		humanize.Bytes(snap.Referenced))
+	defer snap.Close()
+
+	// Parse reference size and print a pretty message
+	refSizeStr := snap.Properties[zfs.DatasetPropReferenced].Value
+	refSize, _ := strconv.ParseUint(refSizeStr, 10, 64)
+	log.Infof("snapshot %s created, %s refer size", snapName,
+		humanize.Bytes(refSize))
 
 	return nil
 }
