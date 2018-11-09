@@ -87,8 +87,8 @@ func (mb *mcbackup) RunOnce() (err error) {
 		output, err = mb.rcon.SendCommand("save-all")
 		log.Info(output)
 		if err != nil {
-			log.Error(err)
-			log.Warn("saving failed, attempting to re-enable saving")
+			log.WithError(err).
+				Warn("saving failed, attempting to re-enable saving")
 		} else {
 
 			// Take a backup if saving succeeded
@@ -96,7 +96,8 @@ func (mb *mcbackup) RunOnce() (err error) {
 			if err != nil {
 				// Log the error but continue to re-enable saving.
 				// Saving shouldn't ever be left disabled
-				log.Warn(err)
+				log.WithError(err).
+					Error("failed to take backup")
 			}
 		}
 	}
