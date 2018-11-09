@@ -30,14 +30,20 @@ func main() {
 	// so that they can be re-parsed by the provider.
 	parser := flags.NewParser(&opts, flags.IgnoreUnknown|flags.HelpFlag)
 	parser.Name = "mcbackup"
-	// Required to prevent default action of single backup
-	parser.SubcommandsOptional = true
 
 	remain, err := parser.ParseArgs(os.Args[1:])
 	if err != nil {
-		log.Error(err)
-		parser.WriteHelp(os.Stdout)
-		os.Exit(1)
+		// Handle 'no command specified' scenario by defaulting to 'once'
+		if e, ok := err.(*flags.Error); ok &&
+			e.Type == flags.ErrCommandRequired {
+			// This isn't actually an error.
+			// If no command is provided, just default to the 'once' command
+			parser.Active = parser.Find("once")
+		} else {
+			log.Error(err)
+			parser.WriteHelp(os.Stdout)
+			os.Exit(1)
+		}
 	}
 
 	// Find the provider named by argument/environment variable
@@ -77,18 +83,14 @@ func main() {
 	}
 
 	mcb := mcbackup.New(prov, client, &opts)
-	switch parser.Active {
-	case nil:
+	switch parser.Active.Name {
+	case "cron":
+		mcb.Cron()
+		break
+	default:
+	case "once":
 		log.Info("running a single backup")
 		mcb.RunOnce()
 		break
-	default:
-		cmd := parser.Active.Name
-		switch cmd {
-		case "cron":
-			mcb.Cron()
-		default:
-			log.Fatalf("unknown command '%s'", cmd)
-		}
 	}
 }
