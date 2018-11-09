@@ -1,5 +1,5 @@
 package provider
 
 type Provider interface {
-	TakeBackup() error
+	TakeBackup(name string) error
 }

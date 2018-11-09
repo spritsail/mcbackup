@@ -1,20 +1,17 @@
 package zfs
 
 import (
-	strftime "github.com/cactus/gostrftime"
 	"github.com/dustin/go-humanize"
 	"github.com/jessevdk/go-flags"
 	"github.com/lorenz/go-libzfs"
 	"github.com/sirupsen/logrus"
 	"github.com/spritsail/mcbackup/provider"
 	"strconv"
-	"time"
 )
 
 type ZfsProvider struct {
-	Dataset    string `long:"zfs-dataset" description:"Dataset/volume name" env:"ZFS_DATASET" required:"true"`
-	Recursive  bool   `long:"zfs-recursive" description:"Should snapshots be recursive" env:"ZFS_SNAPSHOT_RECURSE"`
-	DateFormat string `long:"zfs-date-format" description:"Format for snapshot names" env:"ZFS_DATE_FORMAT" default:"%F-%H:%M"`
+	Dataset   string `long:"zfs-dataset" description:"Dataset/volume name" env:"ZFS_DATASET" required:"true"`
+	Recursive bool   `long:"zfs-recursive" description:"Should snapshots be recursive" env:"ZFS_SNAPSHOT_RECURSE"`
 }
 
 func New(args []string) (p provider.Provider, remain []string, err error) {
@@ -36,13 +33,13 @@ func New(args []string) (p provider.Provider, remain []string, err error) {
 	return
 }
 
-func (zp *ZfsProvider) TakeBackup() error {
+func (zp *ZfsProvider) TakeBackup(name string) error {
 	log := logrus.WithField("prefix", "zfs")
 
 	log.Info("taking zfs snapshot")
 
 	// Take the snapshot and return the error if any
-	snapName := zp.Dataset + "@" + zp.genSnapshotName()
+	snapName := zp.Dataset + "@" + name
 	props := make(map[zfs.Prop]zfs.Property)
 	snap, err := zfs.DatasetSnapshot(snapName, zp.Recursive, props)
 	if err != nil {
@@ -57,8 +54,4 @@ func (zp *ZfsProvider) TakeBackup() error {
 		humanize.Bytes(refSize))
 
 	return nil
-}
-
-func (zp *ZfsProvider) genSnapshotName() string {
-	return strftime.Format(zp.DateFormat, time.Now())
 }

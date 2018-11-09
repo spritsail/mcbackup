@@ -1,6 +1,7 @@
 package mcbackup
 
 import (
+	"github.com/knz/strtime"
 	"github.com/seeruk/minecraft-rcon/rcon"
 	"github.com/sirupsen/logrus"
 	"github.com/spritsail/mcbackup/config"
@@ -75,8 +76,12 @@ func (mb *mcbackup) RunOnce() (err error) {
 		return
 	}
 
+	backupName, err := mb.genSnapshotName()
+	if err != nil {
+		return err
+	}
+
 	log.Info("starting backup")
-	time.Sleep(2 * time.Second)
 
 	// Disable automatic saving
 	output, err := mb.rcon.SendCommand("save-off")
@@ -92,7 +97,7 @@ func (mb *mcbackup) RunOnce() (err error) {
 		} else {
 
 			// Take a backup if saving succeeded
-			err = mb.prov.TakeBackup()
+			err = mb.prov.TakeBackup(backupName)
 			if err != nil {
 				// Log the error but continue to re-enable saving.
 				// Saving shouldn't ever be left disabled
@@ -109,5 +114,15 @@ func (mb *mcbackup) RunOnce() (err error) {
 	}
 	log.Info(output)
 
+	return
+}
+
+func (mb *mcbackup) genSnapshotName() (name string, err error) {
+	// Generate backup name from prefix and date format
+	formatted, err := strtime.Strftime(time.Now(), mb.opts.BackupFormat)
+	if err != nil {
+		return
+	}
+	name = mb.opts.BackupPrefix + formatted
 	return
 }
