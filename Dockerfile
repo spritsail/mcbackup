@@ -26,7 +26,8 @@ LABEL maintainer="Spritsail <mcbackup@spritsail.io>" \
 # Install runtime dependencies
 RUN apk --no-cache add zfs-libs
 
-COPY --from=0 /mcbackup /
+COPY --from=0 /mcbackup /usr/bin
 
-WORKDIR /backups
-CMD ["/mcbackup"]
+ENV BACKUP_DIRECTORY=/backups
+WORKDIR $BACKUP_DIRECTORY
+ENTRYPOINT ["/sbin/tini", "--", "/usr/bin/mcbackup"]
