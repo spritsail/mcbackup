@@ -80,11 +80,7 @@ func (mb *mcbackup) RunOnce() (err error) {
 		log.Error("error communicating with rcon, reconnecting")
 
 		// Create a new client and try reconnecting
-		mb.rcon, err = rcon.NewClient(
-			mb.opts.Host,
-			int(mb.opts.Port),
-			mb.opts.Password,
-		)
+		mb.rcon, err = NewClient(mb.opts)
 
 		// Only return error if reconnecting fails
 		if err != nil {
@@ -126,6 +122,14 @@ func (mb *mcbackup) RunOnce() (err error) {
 	log.Info(output)
 
 	return
+}
+
+func NewClient(opts *config.GlobalOpts) (*rcon.Client, error) {
+	return rcon.NewClient(
+		opts.Host,
+		int(opts.Port),
+		opts.Password,
+	)
 }
 
 func (mb *mcbackup) genSnapshotName() (name string, err error) {

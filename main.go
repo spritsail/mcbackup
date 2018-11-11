@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/jessevdk/go-flags"
-	"github.com/seeruk/minecraft-rcon/rcon"
 	"github.com/sirupsen/logrus"
 	"github.com/spritsail/mcbackup/config"
 	"github.com/spritsail/mcbackup/mcbackup"
@@ -73,11 +72,7 @@ func main() {
 	}
 
 	log.Debug("creating client")
-	client, err := rcon.NewClient(
-		opts.Host,
-		int(opts.Port),
-		opts.Password,
-	)
+	client, err := mcbackup.NewClient(&opts)
 	if err != nil {
 		logrus.
 			WithField("prefix", "rcon").
