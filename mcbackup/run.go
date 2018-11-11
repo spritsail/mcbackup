@@ -69,16 +69,27 @@ func (mb *mcbackup) Cron() {
 func (mb *mcbackup) RunOnce() (err error) {
 	log := logrus.WithField("prefix", "backup")
 
-	// Send a test command to check the client works
-	_, err = mb.rcon.SendCommand("list")
-	if err != nil {
-		log.Error("error communicating with rcon")
-		return
-	}
-
 	backupName, err := mb.genSnapshotName()
 	if err != nil {
 		return err
+	}
+
+	// Send a test command to check the client works
+	_, err = mb.rcon.SendCommand("list")
+	if err != nil {
+		log.Error("error communicating with rcon, reconnecting")
+
+		// Create a new client and try reconnecting
+		mb.rcon, err = rcon.NewClient(
+			mb.opts.Host,
+			int(mb.opts.Port),
+			mb.opts.Password,
+		)
+
+		// Only return error if reconnecting fails
+		if err != nil {
+			return
+		}
 	}
 
 	log.Info("starting backup")
