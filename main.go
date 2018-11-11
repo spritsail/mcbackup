@@ -56,8 +56,9 @@ func main() {
 	// Attempt to initialise the provider with the remaining arguments
 	prov, remain, err := providerInit(remain)
 	if err != nil {
-		log.Error("Failed to create provider")
-		log.Error(err)
+		log.WithField("name", opts.Provider).
+			WithError(err).
+			Error("Failed to create provider")
 		os.Exit(1)
 	}
 
@@ -78,9 +79,12 @@ func main() {
 		opts.Password,
 	)
 	if err != nil {
-		logrus.WithField("prefix", "rcon").Error(err)
-		log.Fatal("error creating client")
+		logrus.
+			WithField("prefix", "rcon").
+			WithError(err).
+			Fatal("error creating client")
 	}
+	log.Debug("client connection successful")
 
 	mcb := mcbackup.New(prov, client, &opts)
 	switch parser.Active.Name {

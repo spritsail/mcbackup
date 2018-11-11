@@ -58,10 +58,16 @@ func (t *task) Run() {
 		log.Debug("executing job")
 		err = t.Job()
 
-		log.WithError(err).Debug("job completed")
-		if err != nil && t.ErrHandler != nil {
-			// Pass the error to the handler
-			t.ErrHandler(err)
+		if err != nil {
+			log.WithError(err).
+				Debug("job failed")
+
+			if t.ErrHandler != nil {
+				// Pass the error to the handler
+				t.ErrHandler(err)
+			}
+		} else {
+			log.Debug("job completed")
 		}
 	}
 
