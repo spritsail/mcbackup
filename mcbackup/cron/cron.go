@@ -46,7 +46,7 @@ func (t *task) Run() {
 		now := time.Now()
 		next := t.When.Next(now)
 		waitfor := next.Sub(now)
-		log.Debug("waiting until, ", next)
+		log.Debug("next run at ", next)
 		select {
 		case <-time.After(waitfor):
 			break
