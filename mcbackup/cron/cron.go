@@ -7,15 +7,15 @@ import (
 )
 
 type task struct {
-	Job        func() error         // function to run
-	When       *cronexpr.Expression // when to run it
-	Done       chan error           // channel, called when the job is complete. if channel is closed, the job has already finished
-	ErrHandler func(error)          // optional function to handle errors, can be used to stop the timer
-	running    bool                 // set false
-	cancel     chan struct{}        // a channel to interrupt the sleeping loop
+	Job        func(time.Time) error // function to run
+	When       *cronexpr.Expression  // when to run it
+	Done       chan error            // channel, called when the job is complete. if channel is closed, the job has already finished
+	ErrHandler func(error)           // optional function to handle errors, can be used to stop the timer
+	running    bool                  // set false
+	cancel     chan struct{}         // a channel to interrupt the sleeping loop
 }
 
-func Schedule(when string, what func() error) (*task, error) {
+func Schedule(when string, what func(time.Time) error) (*task, error) {
 
 	whenExpr, err := cronexpr.Parse(when)
 	if err != nil {
@@ -56,7 +56,7 @@ func (t *task) Run() {
 		}
 
 		log.Debug("executing job")
-		err = t.Job()
+		err = t.Job(next)
 
 		if err != nil {
 			log.WithError(err).

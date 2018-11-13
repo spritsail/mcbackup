@@ -1,7 +1,6 @@
 package mcbackup
 
 import (
-	"github.com/knz/strtime"
 	"github.com/seeruk/minecraft-rcon/rcon"
 	"github.com/sirupsen/logrus"
 	"github.com/spritsail/mcbackup/config"
@@ -66,10 +65,10 @@ func (mb *mcbackup) Cron() {
 	}
 }
 
-func (mb *mcbackup) RunOnce() (err error) {
+func (mb *mcbackup) RunOnce(when time.Time) (err error) {
 	log := logrus.WithField("prefix", "backup")
 
-	backupName, err := mb.genSnapshotName()
+	backupName, err := mb.opts.GenBackupName(when)
 	if err != nil {
 		return err
 	}
@@ -130,14 +129,4 @@ func NewClient(opts *config.GlobalOpts) (*rcon.Client, error) {
 		int(opts.Port),
 		opts.Password,
 	)
-}
-
-func (mb *mcbackup) genSnapshotName() (name string, err error) {
-	// Generate backup name from prefix and date format
-	formatted, err := strtime.Strftime(time.Now(), mb.opts.BackupFormat)
-	if err != nil {
-		return
-	}
-	name = mb.opts.BackupPrefix + formatted
-	return
 }

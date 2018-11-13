@@ -8,6 +8,7 @@ import (
 	"github.com/spritsail/mcbackup/provider"
 	"github.com/x-cray/logrus-prefixed-formatter"
 	"os"
+	"time"
 )
 
 var Version string
@@ -89,7 +90,7 @@ func main() {
 	default:
 	case "once":
 		log.Info("running a single backup")
-		mcb.RunOnce()
+		mcb.RunOnce(time.Now())
 		break
 	}
 }

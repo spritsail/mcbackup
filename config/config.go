@@ -1,5 +1,10 @@
 package config
 
+import (
+	"github.com/knz/strtime"
+	"time"
+)
+
 type GlobalOpts struct {
 	Host         string `short:"h" long:"host" description:"Minecraft server host address" env:"MCBACKUP_HOST" required:"true"`
 	Port         uint   `short:"p" long:"port" description:"Minecraft server RCON port" env:"MCBACKUP_PORT" default:"25575"`
@@ -12,4 +17,18 @@ type GlobalOpts struct {
 	} `command:"cron"`
 	Run struct {
 	} `command:"once"`
+}
+
+func (opts GlobalOpts) GenBackupName(when time.Time) (name string, err error) {
+	// Generate backup name from prefix and date format
+	formatted, err := strtime.Strftime(when, opts.BackupFormat)
+	if err != nil {
+		return
+	}
+	name = opts.BackupPrefix + formatted
+	return
+}
+func (opts GlobalOpts) ParseBackupName(name string) (when time.Time, err error) {
+	// Parse backup name from string and date format
+	return strtime.Strptime(name, opts.BackupPrefix+opts.BackupFormat)
 }
