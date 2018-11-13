@@ -1,11 +1,10 @@
-package zfs
+package provider
 
 import (
 	"github.com/dustin/go-humanize"
 	"github.com/jessevdk/go-flags"
 	"github.com/lorenz/go-libzfs"
 	"github.com/sirupsen/logrus"
-	"github.com/spritsail/mcbackup/provider"
 	"strconv"
 )
 
@@ -14,7 +13,7 @@ type ZfsProvider struct {
 	Recursive bool   `long:"zfs-recursive" description:"Should snapshots be recursive" env:"ZFS_SNAPSHOT_RECURSE"`
 }
 
-func New(args []string) (p provider.Provider, remain []string, err error) {
+func NewZFS(args []string) (p Provider, remain []string, err error) {
 	var zfsOpts ZfsProvider
 
 	parser := flags.NewParser(&zfsOpts, flags.IgnoreUnknown)

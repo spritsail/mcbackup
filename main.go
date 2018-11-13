@@ -5,7 +5,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spritsail/mcbackup/config"
 	"github.com/spritsail/mcbackup/mcbackup"
-	providers "github.com/spritsail/mcbackup/provider/load"
+	"github.com/spritsail/mcbackup/provider"
 	"github.com/x-cray/logrus-prefixed-formatter"
 	"os"
 )
@@ -46,7 +46,7 @@ func main() {
 	}
 
 	// Find the provider named by argument/environment variable
-	providerInit := providers.Find(opts.Provider)
+	providerInit := provider.Find(opts.Provider)
 	if providerInit == nil {
 		log.Error("No such provider found with name '%s'", opts.Provider)
 		os.Exit(1)
