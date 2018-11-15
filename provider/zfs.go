@@ -32,7 +32,7 @@ func NewZFS(args []string) (p Provider, remain []string, err error) {
 	return
 }
 
-func (zp *ZfsProvider) TakeBackup(name string) error {
+func (zp *ZfsProvider) Create(name string) error {
 	log := logrus.WithField("prefix", "zfs")
 
 	log.Info("taking zfs snapshot")

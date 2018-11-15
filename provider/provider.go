@@ -5,7 +5,7 @@ import (
 )
 
 type Provider interface {
-	TakeBackup(name string) error
+	Create(name string) error
 }
 
 var allProviders = map[string]func([]string) (Provider, []string, error){

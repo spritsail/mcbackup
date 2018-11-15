@@ -103,7 +103,7 @@ func (mb *mcbackup) RunOnce(when time.Time) (err error) {
 		} else {
 
 			// Take a backup if saving succeeded
-			err = mb.prov.TakeBackup(backupName)
+			err = mb.prov.Create(backupName)
 			if err != nil {
 				// Log the error but continue to re-enable saving.
 				// Saving shouldn't ever be left disabled
