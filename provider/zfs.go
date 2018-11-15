@@ -1,11 +1,12 @@
 package provider
 
 import (
+	"strconv"
+
 	"github.com/dustin/go-humanize"
 	"github.com/jessevdk/go-flags"
 	"github.com/lorenz/go-libzfs"
 	"github.com/sirupsen/logrus"
-	"strconv"
 )
 
 type ZfsProvider struct {

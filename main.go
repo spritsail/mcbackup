@@ -1,16 +1,18 @@
 package main
 
 import (
+	"os"
+	"time"
+
 	"github.com/jessevdk/go-flags"
 	"github.com/sirupsen/logrus"
 	"github.com/spritsail/mcbackup/config"
 	"github.com/spritsail/mcbackup/mcbackup"
 	"github.com/spritsail/mcbackup/provider"
 	"github.com/x-cray/logrus-prefixed-formatter"
-	"os"
-	"time"
 )
 
+// Version constant set with -ldflags '-X main.Version=xxx'
 var Version string
 
 func init() {
@@ -49,7 +51,7 @@ func main() {
 	// Find the provider named by argument/environment variable
 	providerInit := provider.Find(opts.Provider)
 	if providerInit == nil {
-		log.Error("No such provider found with name '%s'", opts.Provider)
+		log.Errorf("No such provider found with name '%s'", opts.Provider)
 		os.Exit(1)
 	}
 

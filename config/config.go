@@ -1,8 +1,9 @@
 package config
 
 import (
-	"github.com/knz/strtime"
 	"time"
+
+	"github.com/knz/strtime"
 )
 
 type GlobalOpts struct {

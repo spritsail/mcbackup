@@ -1,15 +1,16 @@
 package mcbackup
 
 import (
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
 	"github.com/seeruk/minecraft-rcon/rcon"
 	"github.com/sirupsen/logrus"
 	"github.com/spritsail/mcbackup/config"
 	"github.com/spritsail/mcbackup/mcbackup/cron"
 	"github.com/spritsail/mcbackup/provider"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 )
 
 type mcbackup struct {

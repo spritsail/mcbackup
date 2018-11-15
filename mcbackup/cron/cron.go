@@ -1,9 +1,10 @@
 package cron
 
 import (
+	"time"
+
 	"github.com/gorhill/cronexpr"
 	"github.com/sirupsen/logrus"
-	"time"
 )
 
 type task struct {
