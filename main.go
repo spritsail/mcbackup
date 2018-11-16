@@ -62,7 +62,7 @@ func main() {
 	}
 
 	// Attempt to initialise the provider with the remaining arguments
-	prov, remain, err := providerInit(remain)
+	prov, remain, err := providerInit(remain, &opts)
 	if err != nil {
 		log.WithField("name", opts.Provider).
 			WithError(err).
@@ -95,10 +95,18 @@ func main() {
 	case "cron":
 		mcb.Cron()
 		break
+	case "prune":
+		err = mcb.Prune(time.Now())
+		break
 	default:
 	case "once":
 		log.Info("running a single backup")
-		mcb.RunOnce(time.Now())
+		err = mcb.RunOnce(time.Now())
 		break
+	}
+
+	if err != nil {
+		log.WithError(err).
+			Fatalf(":(")
 	}
 }
