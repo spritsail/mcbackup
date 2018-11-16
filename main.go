@@ -92,7 +92,8 @@ func main() {
 			WithError(err).
 			Fatal("error creating client")
 	}
-	log.Debug("client connection successful")
+	logrus.WithField("prefix", "rcon").
+		Info("client connection successful")
 
 	mcb := mcbackup.New(prov, client, &opts)
 	command := parser.Active
