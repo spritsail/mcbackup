@@ -37,10 +37,9 @@ func (mb *mcbackup) Prune(from time.Time) error {
 	keep, remain, err := splitPrune(backups, from, mb.opts.Prune)
 
 	if len(keep) > 0 {
-		log.Traceln("keeping the following backups:")
-		for i, bkup := range keep {
-			log.Tracef(" %3d) %s (%s)", i+1, bkup.Name(),
-				bkup.Reason().String())
+		log.Infof("keeping %d backups", len(keep))
+		for _, bkup := range keep {
+			log.Tracef("  %s (%s)", bkup.Name(), bkup.Reason().String())
 		}
 		log.Tracef("keep %d + remain %d = all %d (%t)",
 			len(keep), len(remain), len(backups),
@@ -53,6 +52,9 @@ func (mb *mcbackup) Prune(from time.Time) error {
 	}
 
 	log.Infof("removing %d backups", len(remain))
+	for _, bkup := range remain {
+		log.Tracef("  %s (%s)", bkup.Name(), bkup.Reason().String())
+	}
 
 	for _, bkup := range remain {
 		if err = mb.prov.Remove(bkup); err != nil {

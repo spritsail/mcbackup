@@ -110,7 +110,7 @@ func main() {
 	default:
 	case "once":
 		log.Info("running a single backup")
-		err = mcb.RunOnce(time.Now())
+		err = mcb.TakeBackup(time.Now())
 		break
 	}
 

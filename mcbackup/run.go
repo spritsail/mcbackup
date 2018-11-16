@@ -31,7 +31,7 @@ func (mb *mcbackup) Cron() {
 	log := logrus.WithField("prefix", "cron")
 	log.Info("starting cron")
 
-	job, err := cron.Schedule(mb.opts.Cron.CronSchedule, mb.RunOnce)
+	job, err := cron.Schedule(mb.opts.Cron.CronSchedule, mb.cronRunner)
 	if err != nil {
 		log.WithError(err).
 			Fatal("failed to schedule backup job")
@@ -65,8 +65,19 @@ func (mb *mcbackup) Cron() {
 		break
 	}
 }
+func (mb *mcbackup) cronRunner(t time.Time) error {
+	err := mb.TakeBackup(t)
+	if err != nil {
+		return err
+	}
 
-func (mb *mcbackup) RunOnce(when time.Time) (err error) {
+	if !mb.opts.Cron.NoPrune {
+		return mb.Prune(t)
+	}
+	return nil
+}
+
+func (mb *mcbackup) TakeBackup(when time.Time) (err error) {
 	log := logrus.WithField("prefix", "backup")
 
 	backupName, err := mb.opts.GenBackupName(when)

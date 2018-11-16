@@ -19,6 +19,7 @@ type Options struct {
 
 	Cron struct {
 		CronSchedule string `short:"s" long:"cron-schedule" description:"Cron-like schedule to run backups on" env:"CRON_SCHEDULE" default:"*/15 * * * *"`
+		NoPrune      bool   `long:"no-prune" description:"disable pruning during cron operation" env:"CRON_NO_PRUNE"`
 	} `command:"cron"`
 
 	Run struct {
