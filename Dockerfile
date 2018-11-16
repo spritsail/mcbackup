@@ -29,6 +29,7 @@ RUN apk --no-cache add zfs-libs
 
 COPY --from=0 /mcbackup /usr/bin
 
+ENV SUID=0 SGID=0
 ENV BACKUP_DIRECTORY=/backups
 WORKDIR $BACKUP_DIRECTORY
-ENTRYPOINT ["/sbin/tini", "--", "/usr/bin/mcbackup"]
+ENTRYPOINT ["/sbin/tini", "--", "su-exec", "-e", "/usr/bin/mcbackup"]
