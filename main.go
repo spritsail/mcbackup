@@ -22,7 +22,7 @@ func init() {
 }
 
 func main() {
-	var opts config.GlobalOpts
+	var opts config.Options
 
 	log := logrus.WithField("prefix", "main")
 	log.Printf("mcbackup, version %s", Version)

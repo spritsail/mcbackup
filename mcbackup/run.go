@@ -16,10 +16,10 @@ import (
 type mcbackup struct {
 	prov provider.Provider
 	rcon *rcon.Client
-	opts *config.GlobalOpts
+	opts *config.Options
 }
 
-func New(p provider.Provider, rc *rcon.Client, opts *config.GlobalOpts) *mcbackup {
+func New(p provider.Provider, rc *rcon.Client, opts *config.Options) *mcbackup {
 	mb := new(mcbackup)
 	mb.prov = p
 	mb.rcon = rc
@@ -124,7 +124,7 @@ func (mb *mcbackup) RunOnce(when time.Time) (err error) {
 	return
 }
 
-func NewClient(opts *config.GlobalOpts) (*rcon.Client, error) {
+func NewClient(opts *config.Options) (*rcon.Client, error) {
 	return rcon.NewClient(
 		opts.Host,
 		int(opts.Port),
