@@ -31,6 +31,7 @@ func main() {
 	// so that they can be re-parsed by the provider.
 	parser := flags.NewParser(&opts, flags.IgnoreUnknown|flags.HelpFlag)
 	parser.Name = "mcbackup"
+	parser.SubcommandsOptional = true
 
 	remain, err := parser.ParseArgs(os.Args[1:])
 	if err != nil {
@@ -41,8 +42,11 @@ func main() {
 			// If no command is provided, just default to the 'once' command
 			parser.Active = parser.Find("once")
 		} else {
-			log.Error(err)
-			parser.WriteHelp(os.Stdout)
+			if e, ok := err.(*flags.Error); ok &&
+				e.Type != flags.ErrHelp {
+				log.Error(err)
+			}
+			parser.WriteHelp(os.Stderr)
 			os.Exit(1)
 		}
 	}
@@ -91,7 +95,11 @@ func main() {
 	log.Debug("client connection successful")
 
 	mcb := mcbackup.New(prov, client, &opts)
-	switch parser.Active.Name {
+	command := parser.Active
+	if command == nil {
+		command = parser.Find("once")
+	}
+	switch command.Name {
 	case "cron":
 		mcb.Cron()
 		break
