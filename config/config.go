@@ -13,6 +13,7 @@ type GlobalOpts struct {
 	Provider     string `long:"provider" description:"Backup provider, for taking/storing backups" env:"BACKUP_PROVIDER" default:"tar" choice:"zfs" choice:"zip" choice:"tar"`
 	BackupPrefix string `long:"backup-prefix" description:"Identifying prefix for mcbackup-managed backups" env:"BACKUP_PREFIX" default:"mcb-"`
 	BackupFormat string `long:"date-format" description:"Format for snapshot names (see date(1))" env:"BACKUP_FORMAT" default:"%F-%H:%M"`
+	LogLevel     string `short:"l" long:"level" description:"log level verbosity" env:"LOG_LEVEL" choice:"warn" choice:"info" choice:"debug" choice:"trace" default:"info"`
 	Cron         struct {
 		CronSchedule string `command:"cron" short:"s" long:"cron-schedule" description:"Cron-like schedule to run backups on" env:"CRON_SCHEDULE" default:"*/15 * * * *"`
 	} `command:"cron"`

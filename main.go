@@ -19,7 +19,6 @@ func init() {
 	logrus.SetFormatter(&prefixed.TextFormatter{
 		FullTimestamp: true,
 	})
-	logrus.SetLevel(logrus.DebugLevel)
 }
 
 func main() {
@@ -47,6 +46,13 @@ func main() {
 			os.Exit(1)
 		}
 	}
+
+	lvl, err := logrus.ParseLevel(opts.LogLevel)
+	if err != nil {
+		log.WithError(err).
+			Errorf("failed to set log level '%s'", opts.LogLevel)
+	}
+	logrus.SetLevel(lvl)
 
 	// Find the provider named by argument/environment variable
 	providerInit := provider.Find(opts.Provider)
