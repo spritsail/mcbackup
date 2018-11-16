@@ -119,7 +119,8 @@ func splitPrune(bs backup.Backups, from time.Time, opts config.Prune) (keep back
 
 	for _, bkup := range bs {
 		when := bkup.When()
-		if when.After(keepStart) && when.Before(keepEnd) {
+		if when.After(from) || when.Equal(from) ||
+			(when.After(keepStart) && when.Before(keepEnd)) {
 			// Only insert the value if it's not already
 			if _, ok := keepMap[when]; !ok {
 				bkup.AddReason(backup.Recent)
