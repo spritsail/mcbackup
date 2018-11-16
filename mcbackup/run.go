@@ -102,9 +102,10 @@ func (mb *mcbackup) RunOnce(when time.Time) (err error) {
 			log.WithError(err).
 				Warn("saving failed, attempting to re-enable saving")
 		} else {
-
-			// Take a backup if saving succeeded
-			err = mb.prov.Create(backupName)
+			if !mb.opts.DryRun {
+				// Take a backup if saving succeeded
+				err = mb.prov.Create(backupName)
+			}
 			if err != nil {
 				// Log the error but continue to re-enable saving.
 				// Saving shouldn't ever be left disabled
