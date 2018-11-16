@@ -17,6 +17,10 @@ var allProviders = map[string]func([]string, *config.Options) (Provider, []strin
 	"zfs": NewZFS,
 }
 
+func Register(name string, init func([]string, *config.Options) (Provider, []string, error)) {
+	allProviders[name] = init
+}
+
 func Find(name string) func([]string, *config.Options) (Provider, []string, error) {
 	return allProviders[strings.ToLower(name)]
 }
