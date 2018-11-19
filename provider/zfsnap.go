@@ -1,34 +1,68 @@
 package provider
 
 import (
+	"strconv"
 	"time"
 
+	"github.com/lorenz/go-libzfs"
 	"github.com/spritsail/mcbackup/backup"
 )
 
 type zfsSnapshot struct {
-	data    backup.Data
 	dataset string
+
+	name   string
+	when   time.Time
+	reason backup.Reason
 }
 
 func (zs *zfsSnapshot) Name() string {
-	return zs.data.Name()
+	return zs.name
 }
 
 func (zs *zfsSnapshot) When() time.Time {
-	return zs.data.When()
+	return zs.when
+}
+
+func (zs *zfsSnapshot) Remove() error {
+	ds, err := zfs.DatasetOpen(zs.dataset)
+	defer ds.Close()
+	if err != nil {
+		return err
+	}
+	return ds.Destroy(true)
+}
+
+func (zs *zfsSnapshot) Size() (uint64, error) {
+	ds, err := zfs.DatasetOpen(zs.dataset)
+	defer ds.Close()
+	if err != nil {
+		return 0, err
+	}
+	prop := ds.Properties[zfs.DatasetPropReferenced].Value
+	return strconv.ParseUint(prop, 10, 64)
+}
+
+func (zs *zfsSnapshot) SpaceUsed() (uint64, error) {
+	ds, err := zfs.DatasetOpen(zs.dataset)
+	defer ds.Close()
+	if err != nil {
+		return 0, err
+	}
+	prop := ds.Properties[zfs.DatasetPropUsed].Value
+	return strconv.ParseUint(prop, 10, 64)
 }
 
 func (zs *zfsSnapshot) Reason() backup.Reason {
-	return zs.data.Reason()
+	return zs.reason
 }
 
 func (zs *zfsSnapshot) AddReason(r backup.Reason) {
-	zs.data.AddReason(r)
+	zs.reason |= r
 }
 
 func (zs *zfsSnapshot) SetReason(r backup.Reason) {
-	zs.data.SetReason(r)
+	zs.reason = r
 }
 
 var _ backup.Backup = &zfsSnapshot{}

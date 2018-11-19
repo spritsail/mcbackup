@@ -47,6 +47,10 @@ func (reason Reason) String() string {
 type Backup interface {
 	Name() string
 	When() time.Time
+	Remove() error
+	Size() (uint64, error)
+	SpaceUsed() (uint64, error)
+
 	Reason() Reason
 	AddReason(Reason)
 	SetReason(Reason)

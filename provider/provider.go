@@ -2,13 +2,14 @@ package provider
 
 import (
 	"strings"
+	"time"
 
 	"github.com/spritsail/mcbackup/backup"
 	"github.com/spritsail/mcbackup/config"
 )
 
 type Provider interface {
-	Create(name string) error
+	Create(name string, when time.Time) (backup.Backup, error)
 	List() (backup.Backups, error)
 	Remove(name backup.Backup) error
 }

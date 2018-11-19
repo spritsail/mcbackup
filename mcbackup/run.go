@@ -115,7 +115,7 @@ func (mb *mcbackup) TakeBackup(when time.Time) (err error) {
 		} else {
 			if !mb.opts.DryRun {
 				// Take a backup if saving succeeded
-				err = mb.prov.Create(backupName)
+				_, err = mb.prov.Create(backupName, when)
 			}
 			if err != nil {
 				// Log the error but continue to re-enable saving.

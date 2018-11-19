@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/dustin/go-humanize"
 	"github.com/jessevdk/go-flags"
@@ -39,7 +40,7 @@ func NewZFS(args []string, opts *config.Options) (p Provider, remain []string, e
 	return
 }
 
-func (zp *ZfsProvider) Create(name string) error {
+func (zp *ZfsProvider) Create(name string, when time.Time) (backup.Backup, error) {
 	log := logrus.WithField("prefix", "zfs")
 
 	log.Info("taking zfs snapshot")
@@ -49,7 +50,7 @@ func (zp *ZfsProvider) Create(name string) error {
 	props := make(map[zfs.Prop]zfs.Property)
 	snap, err := zfs.DatasetSnapshot(snapName, zp.Recursive, props)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer snap.Close()
 
@@ -59,7 +60,14 @@ func (zp *ZfsProvider) Create(name string) error {
 	log.Infof("snapshot %s created, %s refer size", snapName,
 		humanize.Bytes(refSize))
 
-	return nil
+	bkup := &zfsSnapshot{
+		dataset: snapName,
+		name:    name,
+		when:    when,
+		reason:  backup.Unknown,
+	}
+
+	return bkup, nil
 }
 
 func (zp *ZfsProvider) List() (bs backup.Backups, err error) {
@@ -95,7 +103,9 @@ func (zp *ZfsProvider) List() (bs backup.Backups, err error) {
 
 			bs = append(bs, &zfsSnapshot{
 				dataset: name,
-				data:    backup.NewData(name, when, 0),
+				name:    snapName,
+				when:    when,
+				reason:  backup.Unknown,
 			})
 		}
 	}
