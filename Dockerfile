@@ -1,4 +1,4 @@
-ARG MCBACKUP_VER=0.0.1
+ARG MCBACKUP_VER=0.1.0
 
 FROM golang:alpine
 WORKDIR /go/src/github.com/spritsail/mcbackup
