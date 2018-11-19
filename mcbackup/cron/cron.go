@@ -40,41 +40,57 @@ func (t *task) Run() {
 	t.running = true
 	t.Done = make(chan error, 1)
 	t.cancel = make(chan struct{}, 1)
+	defer close(t.Done)
 	var err error
 	for t.running {
+		err = func() (err error) {
+			defer func() {
+				if r := recover(); r != nil {
+					switch val := r.(type) {
+					case error:
+						log.WithError(val).
+							Error("recovered")
+					default:
+						log.WithField("panic", val).
+							Error("recovered")
+					}
+				}
+			}()
 
-		// Wait until the next next starts
-		now := time.Now()
-		next := t.When.Next(now)
-		waitfor := next.Sub(now)
-		log.Debug("next run at ", next)
-		select {
-		case <-time.After(waitfor):
-			break
-		case <-t.cancel:
-			close(t.Done)
-			return
-		}
-
-		log.Debug("executing job")
-		err = t.Job(next)
-
-		if err != nil {
-			log.WithError(err).
-				Debug("job failed")
-
-			if t.ErrHandler != nil {
-				// Pass the error to the handler
-				t.ErrHandler(err)
+			// Wait until the next next starts
+			now := time.Now()
+			next := t.When.Next(now)
+			waitfor := next.Sub(now)
+			log.Debug("next run at ", next)
+			select {
+			case <-time.After(waitfor):
+				break
+			case <-t.cancel:
+				t.running = false
+				return
 			}
-		} else {
-			log.Debug("job completed")
-		}
+
+			log.Debug("executing job")
+			err = t.Job(next)
+
+			if err != nil {
+				log.WithError(err).
+					Warn("job failed")
+
+				if t.ErrHandler != nil {
+					// Pass the error to the handler
+					t.ErrHandler(err)
+				}
+			} else {
+				log.Debug("job completed")
+			}
+
+			return
+		}()
 	}
 
 	// Send the error/nil to signify end of job
 	t.Done <- err
-	close(t.Done)
 }
 
 func (t *task) Cancel() {
