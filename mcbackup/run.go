@@ -6,8 +6,10 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/dustin/go-humanize"
 	"github.com/seeruk/minecraft-rcon/rcon"
 	"github.com/sirupsen/logrus"
+	"github.com/spritsail/mcbackup/backup"
 	"github.com/spritsail/mcbackup/config"
 	"github.com/spritsail/mcbackup/mcbackup/cron"
 	"github.com/spritsail/mcbackup/provider"
@@ -78,7 +80,7 @@ func (mb *mcbackup) cronRunner(t time.Time) error {
 }
 
 func (mb *mcbackup) TakeBackup(when time.Time) (err error) {
-	log := logrus.WithField("prefix", "backup")
+	log := logrus.WithField("prefix", "rcon")
 
 	backupName, err := mb.opts.GenBackupName(when)
 	if err != nil {
@@ -114,26 +116,77 @@ func (mb *mcbackup) TakeBackup(when time.Time) (err error) {
 				Warn("saving failed, attempting to re-enable saving")
 		} else {
 			if !mb.opts.DryRun {
+
 				// Take a backup if saving succeeded
-				_, err = mb.prov.Create(backupName, when)
-			}
-			if err != nil {
-				// Log the error but continue to re-enable saving.
-				// Saving shouldn't ever be left disabled
-				log.WithError(err).
-					Error("failed to take backup")
+				var bkup backup.Backup
+				start := time.Now()
+				bkup, err = mb.prov.Create(backupName, when)
+				elapsed := time.Since(start)
+
+				if err == nil {
+					logBackupStats(bkup, elapsed)
+				} else {
+					// Log the error but don't return to re-enable saving.
+					// Saving shouldn't ever be left disabled
+					logrus.
+						WithField("prefix", "backup").
+						WithError(err).
+						Error("failed to take backup")
+				}
 			}
 		}
 	}
 
-	// Always re-enable automatic saving
-	output, err = mb.rcon.SendCommand("save-on")
-	if err != nil {
-		return
+	// Always re-enable automatic saving before returning
+	output, e := mb.rcon.SendCommand("save-on")
+	if e != nil {
+		log.WithError(e).Warn(output)
+		return e
 	}
 	log.Info(output)
 
 	return
+}
+
+func logBackupStats(bkup backup.Backup, elapsed time.Duration) error {
+	log := logrus.WithField("prefix", "backup")
+	var hSize, hUsed = "?", "?"
+
+	// Log size/disk space used
+	size, err := bkup.Size()
+	if err == nil {
+		hSize = humanize.Bytes(size)
+	} else {
+		log.WithError(err).
+			Warnf("failed to get size of backup")
+		log.Infof("backup %s created in %s",
+			bkup.Name(), elapsed)
+		return err
+	}
+
+	used, err := bkup.SpaceUsed()
+	if err == nil {
+		hUsed = humanize.Bytes(used)
+	} else {
+		log.WithError(err).
+			Warnf("failed to get space used by backup")
+		log.Infof("backup %s created in %s, %s size",
+			bkup.Name(), elapsed, hSize)
+		return err
+	}
+
+	mbps := float64(used) / elapsed.Seconds()
+	hMbps := humanize.Bytes(uint64(mbps))
+
+	if size == used {
+		log.Infof("backup %s created in %s (%s/s), %s size",
+			bkup.Name(), elapsed, hMbps, hSize)
+	} else {
+		log.Infof("backup %s created in %s (%s/s), %s size, (%s on disk)",
+			bkup.Name(), elapsed, hSize, hSize, hUsed)
+	}
+
+	return nil
 }
 
 func NewClient(opts *config.Options) (*rcon.Client, error) {
