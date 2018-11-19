@@ -90,8 +90,8 @@ func (mb *mcbackup) TakeBackup(when time.Time) (err error) {
 	if err != nil {
 		log.Error("error communicating with rcon, reconnecting")
 
-		// Create a new client and try reconnecting
-		mb.rcon, err = NewClient(mb.opts)
+		// Try reconnecting
+		err = mb.rcon.Reconnect()
 
 		// Only return error if reconnecting fails
 		if err != nil {
