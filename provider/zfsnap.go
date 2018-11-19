@@ -24,7 +24,7 @@ func (zs *zfsSnapshot) When() time.Time {
 	return zs.when
 }
 
-func (zs *zfsSnapshot) Remove() error {
+func (zs *zfsSnapshot) Delete() error {
 	ds, err := zfs.DatasetOpen(zs.dataset)
 	defer ds.Close()
 	if err != nil {

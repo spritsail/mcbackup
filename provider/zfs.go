@@ -1,7 +1,6 @@
 package provider
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -110,21 +109,6 @@ func (zp *ZfsProvider) List() (bs backup.Backups, err error) {
 		}
 	}
 	return bs, nil
-}
-
-func (zp *ZfsProvider) Remove(bkup backup.Backup) error {
-	// Ensure backup is a zfs snapshot
-	switch snap := bkup.(type) {
-	case *zfsSnapshot:
-		ds, err := zfs.DatasetOpen(snap.dataset)
-		defer ds.Close()
-		if err != nil {
-			return err
-		}
-		return ds.Destroy(true)
-	default:
-		return fmt.Errorf("backup is not a zfs snapshot")
-	}
 }
 
 var _ Provider = &ZfsProvider{}

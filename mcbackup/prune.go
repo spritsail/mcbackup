@@ -57,7 +57,7 @@ func (mb *mcbackup) Prune(from time.Time) error {
 	}
 
 	for _, bkup := range remain {
-		if err = mb.prov.Remove(bkup); err != nil {
+		if err = bkup.Delete(); err != nil {
 			return err
 		}
 	}

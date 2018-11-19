@@ -11,7 +11,6 @@ import (
 type Provider interface {
 	Create(name string, when time.Time) (backup.Backup, error)
 	List() (backup.Backups, error)
-	Remove(name backup.Backup) error
 }
 
 var allProviders = map[string]func([]string, *config.Options) (Provider, []string, error){
