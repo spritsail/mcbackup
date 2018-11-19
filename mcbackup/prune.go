@@ -53,10 +53,11 @@ func (mb *mcbackup) Prune(from time.Time) error {
 
 	log.Infof("removing %d backups", len(remain))
 	for _, bkup := range remain {
-		log.Tracef("  %s (%s)", bkup.Name(), bkup.Reason().String())
+		log.Debugf("  %s (%s)", bkup.Name(), bkup.Reason().String())
 	}
 
 	for _, bkup := range remain {
+		log.Tracef("deleting backup %s", bkup.Name())
 		if err = bkup.Delete(); err != nil {
 			return err
 		}
