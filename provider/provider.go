@@ -15,6 +15,7 @@ type Provider interface {
 
 var allProviders = map[string]func([]string, *config.Options) (Provider, []string, error){
 	"zfs": NewZFS,
+	"tar": NewTar,
 }
 
 func Register(name string, init func([]string, *config.Options) (Provider, []string, error)) {
