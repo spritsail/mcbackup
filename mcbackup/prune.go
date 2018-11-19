@@ -34,7 +34,7 @@ func (mb *mcbackup) Prune(from time.Time) error {
 	// Ensure the backups are in a sorted order
 	sort.Sort(backups)
 
-	keep, remain, err := splitPrune(backups, from, mb.opts.Prune)
+	keep, remain, err := splitPrune(backups, mb.opts.Prune)
 
 	if len(keep) > 0 {
 		log.Infof("keeping %d backups", len(keep))
@@ -102,7 +102,7 @@ func defaultPruneGroups(opts config.Prune) []PruneGroup {
 }
 
 // splitPrune separates a list of backups into two groups: keep and delete
-func splitPrune(bs backup.Backups, from time.Time, opts config.Prune) (keep backup.Backups, remain backup.Backups, err error) {
+func splitPrune(bs backup.Backups, opts config.Prune) (keep backup.Backups, remain backup.Backups, err error) {
 	if len(bs) < 1 {
 		return
 	}
@@ -111,6 +111,11 @@ func splitPrune(bs backup.Backups, from time.Time, opts config.Prune) (keep back
 
 	// All backups we want to keep
 	var keepMap = make(map[time.Time]backup.Backup, len(bs))
+
+	// Always prune from the most recent backup
+	// This prevents the situation of all backups being
+	// deleted after starting the program after a long period of time
+	var from = bs[len(bs)-1].When()
 
 	var oldest = bs[0]
 	log.Tracef("oldest: %+v", oldest.Name())
@@ -132,8 +137,8 @@ func splitPrune(bs backup.Backups, from time.Time, opts config.Prune) (keep back
 			remain = append(remain, bkup)
 		}
 	}
-	log.Debugf("keeping %d %s backups", len(keepMap),
-		strings.ToLower(backup.Recent.String()))
+	log.Debugf("keeping %d %s backups (%s)", len(keepMap),
+		strings.ToLower(backup.Recent.String()), opts.KeepFor)
 
 	// For each prune group
 	groups := defaultPruneGroups(opts)
