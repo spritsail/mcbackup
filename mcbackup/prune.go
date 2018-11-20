@@ -46,14 +46,18 @@ func (mb *mcbackup) Prune(from time.Time) error {
 			len(keep)+len(remain) == len(backups))
 	}
 
+	if mb.opts.DryRun {
+		log.Infof("actual prune would remove %d backups", len(remain))
+	} else {
+		log.Infof("removing %d backups", len(remain))
+	}
+	for _, bkup := range remain {
+		log.Debugf("  %s (%s)", bkup.Name(), bkup.Reason().String())
+	}
+
 	// Quick, return before we actually delete anything
 	if mb.opts.DryRun {
 		return nil
-	}
-
-	log.Infof("removing %d backups", len(remain))
-	for _, bkup := range remain {
-		log.Debugf("  %s (%s)", bkup.Name(), bkup.Reason().String())
 	}
 
 	for _, bkup := range remain {
