@@ -6,8 +6,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/SeerUK/minecraft-rcon/rcon"
 	"github.com/dustin/go-humanize"
-	"github.com/seeruk/minecraft-rcon/rcon"
 	"github.com/sirupsen/logrus"
 	"github.com/spritsail/mcbackup/backup"
 	"github.com/spritsail/mcbackup/config"
