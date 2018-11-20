@@ -176,6 +176,7 @@ func splitPrune(bs backup.Backups, opts config.Prune) (keep backup.Backups, rema
 				latest := inRange[len(inRange)-1]
 				latest.AddReason(group.reason)
 				keepMap[latest.When()] = latest
+				numKept++
 
 				// Remove latest from remaining backups
 				for idx, e := range remain {
