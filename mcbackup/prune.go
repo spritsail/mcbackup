@@ -60,12 +60,15 @@ func (mb *mcbackup) Prune(from time.Time) error {
 		return nil
 	}
 
+	var failed uint
 	for _, bkup := range remain {
 		log.Tracef("deleting backup %s", bkup.Name())
 		if err = bkup.Delete(); err != nil {
-			return err
+			log.Warnf("failed to delete backup %s", bkup.Name())
+			failed++
 		}
 	}
+	log.Errorf("failed to delete %d backups", failed)
 
 	return nil
 }
