@@ -123,16 +123,21 @@ func splitPrune(bs backup.Backups, opts config.Prune) (keep backup.Backups, rema
 	var from = bs[len(bs)-1].When()
 
 	var oldest = bs[0]
-	log.Tracef("oldest: %+v", oldest.Name())
-	log.Tracef("now %s", from.Format(time.RFC3339))
+	log.Tracef("oldest: %s", oldest.When())
+	log.Tracef("now:    %s", from.Format(time.RFC3339))
 
+	// start is the earlier of the two dates (beginning of the range)
+	// end is the most recent of the two dates
+	// end should be treated inclusively to not miss the most recent backup
 	keepStart := from.Add(-opts.KeepFor)
 	keepEnd := from
 
 	for _, bkup := range bs {
 		when := bkup.When()
-		if when.After(from) || when.Equal(from) ||
-			(when.After(keepStart) && when.Before(keepEnd)) {
+		// Because we only check one group here, anything after `keepEnd' we
+		// also want to keep as it is newer than "now" (although it should never
+		// happen because "now" is the newest backup)
+		if !when.Before(keepStart) {
 			// Only insert the value if it's not already
 			if _, ok := keepMap[when]; !ok {
 				bkup.AddReason(backup.Recent)
@@ -156,12 +161,12 @@ func splitPrune(bs backup.Backups, opts config.Prune) (keep backup.Backups, rema
 		copy(toCheck, bs)
 		log.Tracef("from %s, to now", keepEnd.Format(time.RFC3339))
 
-		keepStart = from
-		keepEnd = group.subTime(from, 1)
+		keepStart = group.subTime(from, 1)
+		keepEnd = from
 
 		iterations, numKept = 0, 0
 		// For each time period within the prune group (e.g. 1hr)
-		for len(toCheck) > 0 && keepStart.After(oldest.When()) && iterations < group.count {
+		for len(toCheck) > 0 && !keepEnd.Before(oldest.When()) && iterations < group.count {
 
 			// Check each backup against each time period
 			for _, bkup := range toCheck {
@@ -170,7 +175,7 @@ func splitPrune(bs backup.Backups, opts config.Prune) (keep backup.Backups, rema
 				}
 				// Test if backup is within required range
 				when := bkup.When()
-				if when.After(keepEnd) && when.Before(keepStart) {
+				if when.After(keepStart) && !when.After(keepEnd) {
 					inRange = append(inRange, bkup)
 				}
 			}
@@ -178,6 +183,10 @@ func splitPrune(bs backup.Backups, opts config.Prune) (keep backup.Backups, rema
 			// Choose the latest backup to keepMap from the time slot
 			if len(inRange) > 0 {
 				latest := inRange[len(inRange)-1]
+				if latest.Reason()&group.reason != 0 {
+					log.Warnf("adding keep entry for same reason. overlapping groups?  %s (%s)",
+						latest.Name(), latest.Reason().String())
+				}
 				latest.AddReason(group.reason)
 				keepMap[latest.When()] = latest
 				numKept++
@@ -193,7 +202,7 @@ func splitPrune(bs backup.Backups, opts config.Prune) (keep backup.Backups, rema
 			}
 
 			// Shift the time intervals down
-			keepEnd, keepStart = group.subTime(keepEnd, 1), keepEnd
+			keepStart, keepEnd = group.subTime(keepStart, 1), keepStart
 
 			// Empty inRange for the next range
 			inRange = nil
