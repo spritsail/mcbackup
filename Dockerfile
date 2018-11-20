@@ -5,7 +5,7 @@ WORKDIR /go/src/github.com/spritsail/mcbackup
 RUN apk --no-cache add gcc musl-dev zfs-dev
 ADD . .
 RUN apk --no-cache add git && \
-    go get -d
+    go get -d -v
 ARG MCBACKUP_VER
 RUN go build \
         -v \
