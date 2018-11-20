@@ -68,7 +68,9 @@ func (mb *mcbackup) Prune(from time.Time) error {
 			failed++
 		}
 	}
-	log.Errorf("failed to delete %d backups", failed)
+	if failed > 0 {
+		log.Errorf("failed to delete %d backups", failed)
+	}
 
 	return nil
 }
