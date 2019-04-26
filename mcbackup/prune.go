@@ -159,7 +159,7 @@ func splitPrune(bs backup.Backups, opts config.Prune) (keep backup.Backups, rema
 	// For each prune group
 	groups := defaultPruneGroups(opts)
 	for _, group := range groups {
-		var iterations, numKept uint
+		var numKept uint
 		var inRange backup.Backups
 
 		// Ensure toCheck is a shallow-copied slice of pointers
@@ -169,9 +169,10 @@ func splitPrune(bs backup.Backups, opts config.Prune) (keep backup.Backups, rema
 		keepStart = group.subTime(from, 1)
 		keepEnd = from
 
-		iterations, numKept = 0, 0
+		numKept = 0
+
 		// For each time period within the prune group (e.g. 1hr)
-		for len(toCheck) > 0 && !keepEnd.Before(oldest.When()) && iterations < group.count {
+		for len(toCheck) > 0 && !keepEnd.Before(oldest.When()) && numKept < group.count {
 
 			// Check each backup against each time period
 			for _, bkup := range toCheck {
@@ -191,10 +192,11 @@ func splitPrune(bs backup.Backups, opts config.Prune) (keep backup.Backups, rema
 				if latest.Reason()&group.reason != 0 {
 					log.Warnf("adding keep entry for same reason. overlapping groups?  %s (%s)",
 						latest.Name(), latest.Reason().String())
+				} else {
+					numKept++
 				}
 				latest.AddReason(group.reason)
 				keepMap[latest.When()] = latest
-				numKept++
 
 				// Remove latest from remaining backups
 				for idx, e := range remain {
@@ -211,8 +213,6 @@ func splitPrune(bs backup.Backups, opts config.Prune) (keep backup.Backups, rema
 
 			// Empty inRange for the next range
 			inRange = nil
-
-			iterations++
 		}
 
 		log.Debugf("keeping %d %s backups for %d %ss", numKept,
