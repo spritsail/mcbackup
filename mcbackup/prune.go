@@ -129,7 +129,7 @@ func splitPrune(bs backup.Backups, opts config.Prune) (keep backup.Backups, rema
 	var from = bs[len(bs)-1].When()
 
 	var oldest = bs[0]
-	log.Tracef("oldest: %s", oldest.When())
+	log.Tracef("oldest: %s", oldest.When().Format(time.RFC3339))
 	log.Tracef("now:    %s", from.Format(time.RFC3339))
 
 	// start is the earlier of the two dates (beginning of the range)
@@ -165,7 +165,6 @@ func splitPrune(bs backup.Backups, opts config.Prune) (keep backup.Backups, rema
 		// Ensure toCheck is a shallow-copied slice of pointers
 		var toCheck = make(backup.Backups, len(bs))
 		copy(toCheck, bs)
-		log.Tracef("from %s, to now", keepEnd.Format(time.RFC3339))
 
 		keepStart = group.subTime(from, 1)
 		keepEnd = from
