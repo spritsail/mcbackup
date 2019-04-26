@@ -1,12 +1,17 @@
 ARG MCBACKUP_VER=0.1.0
 
 FROM golang:alpine
+
+ARG GO111MODULE=on
 WORKDIR /go/src/github.com/spritsail/mcbackup
-RUN apk --no-cache add gcc musl-dev zfs-dev
-ADD . .
-RUN apk --no-cache add git && \
-    go get -d -v
+
+RUN apk --no-cache add gcc musl-dev zfs-dev git
+
+ADD go.mod go.sum ./
+RUN go mod download
+
 ARG MCBACKUP_VER
+ADD . ./
 RUN go build \
         -v \
         -ldflags="-w -s -X 'main.Version=$MCBACKUP_VER'" \
@@ -14,7 +19,7 @@ RUN go build \
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-FROM spritsail/alpine:3.8
+FROM spritsail/alpine:3.9
 
 ARG MCBACKUP_VER
 LABEL maintainer="Spritsail <mcbackup@spritsail.io>" \
