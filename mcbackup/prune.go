@@ -189,6 +189,9 @@ func splitPrune(bs backup.Backups, opts config.Prune) (keep backup.Backups, rema
 			// Choose the latest backup to keepMap from the time slot
 			if len(inRange) > 0 {
 				latest := inRange[len(inRange)-1]
+				log.Tracef("latest between %s and %s is %s", keepStart.Format(time.RFC3339),
+					keepEnd.Format(time.RFC3339), latest.Name())
+
 				if latest.Reason()&group.reason != 0 {
 					log.Warnf("adding keep entry for same reason. overlapping groups?  %s (%s)",
 						latest.Name(), latest.Reason().String())
@@ -206,6 +209,9 @@ func splitPrune(bs backup.Backups, opts config.Prune) (keep backup.Backups, rema
 						break
 					}
 				}
+			} else {
+				log.Tracef("no backups between %s and %s", keepStart.Format(time.RFC3339),
+					keepEnd.Format(time.RFC3339))
 			}
 
 			// Shift the time intervals down
