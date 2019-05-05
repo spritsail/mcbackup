@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dustin/go-humanize"
 	"github.com/sirupsen/logrus"
 	"github.com/spritsail/mcbackup/backup"
 	"github.com/spritsail/mcbackup/config"
@@ -46,11 +47,32 @@ func (mb *mcbackup) Prune(from time.Time) error {
 			len(keep)+len(remain) == len(backups))
 	}
 
+	var spaceKeep uint64
+	var sizeKeep uint64
+	for _, bkup := range keep {
+		// Calculate how much space we're using with the backups we're keeping
+		sizeOnDisk, err := bkup.SpaceUsed()
+		if err != nil {
+			log.WithError(err).Warn("backup SpaceUsed failed")
+		} else {
+			spaceKeep += sizeOnDisk
+		}
+
+		realSize, err := bkup.Size()
+		if err != nil {
+			log.WithError(err).Warn("backup SpaceUsed failed")
+		} else {
+			sizeKeep += realSize
+		}
+	}
+	log.Infof("%s used by %d backups (%s total size)", humanize.Bytes(spaceKeep), len(keep), humanize.Bytes(sizeKeep))
+
 	if mb.opts.DryRun {
 		log.Infof("actual prune would remove %d backups", len(remain))
 	} else {
 		log.Infof("removing %d backups", len(remain))
 	}
+
 	for _, bkup := range remain {
 		log.Debugf("  %s (%s)", bkup.Name(), bkup.Reason().String())
 	}
@@ -61,17 +83,39 @@ func (mb *mcbackup) Prune(from time.Time) error {
 	}
 
 	var failed uint
+	var removed uint
+	var spaceSaved uint64
+	var sizeSaved uint64
 	for _, bkup := range remain {
-		log.Tracef("deleting backup %s", bkup.Name())
+		// Calculate how much space we're saving
+		sizeOnDisk, err := bkup.SpaceUsed()
+		if err != nil {
+			log.WithError(err).Warn("backup.SpaceUsed() failed")
+			sizeOnDisk = 0
+		}
+		realSize, err := bkup.Size()
+		if err != nil {
+			log.WithError(err).Warn("backup.Size() failed")
+			realSize = 0
+		}
+		log.Tracef("deleting backup %s (%s/%s)", bkup.Name(), humanize.Bytes(sizeOnDisk), humanize.Bytes(realSize))
+
 		if err = bkup.Delete(); err != nil {
 			log.WithError(err).
 				Warnf("failed to delete backup %s", bkup.Name())
 			failed++
+		} else {
+			spaceSaved += sizeOnDisk
+			sizeSaved += realSize
+			removed++
 		}
 	}
 	if failed > 0 {
 		log.Errorf("failed to delete %d backups", failed)
 	}
+
+	log.Infof("%s saved in total with %d pruned backups (%s real size)", humanize.Bytes(spaceSaved),
+		removed, humanize.Bytes(sizeSaved))
 
 	return nil
 }
