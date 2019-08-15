@@ -4,6 +4,7 @@ go 1.12
 
 require (
 	github.com/SeerUK/minecraft-rcon v0.0.0-20190221212056-6ab996d90449
+	github.com/bicomsystems/go-libzfs v0.2.2-0.20190807094932-e50663fa5901
 	github.com/dsnet/compress v0.0.1 // indirect
 	github.com/dustin/go-humanize v1.0.0
 	github.com/golang/snappy v0.0.1 // indirect

@@ -5,9 +5,9 @@ import (
 	"strings"
 	"time"
 
+	zfs "github.com/bicomsystems/go-libzfs"
 	"github.com/dustin/go-humanize"
 	"github.com/jessevdk/go-flags"
-	"github.com/lorenz/go-libzfs"
 	"github.com/sirupsen/logrus"
 	"github.com/spritsail/mcbackup/backup"
 	"github.com/spritsail/mcbackup/config"

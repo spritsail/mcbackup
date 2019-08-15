@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/lorenz/go-libzfs"
+	zfs "github.com/bicomsystems/go-libzfs"
 	"github.com/spritsail/mcbackup/backup"
 )
 

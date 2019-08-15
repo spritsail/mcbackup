@@ -1,5 +1,7 @@
 github.com/SeerUK/minecraft-rcon v0.0.0-20190221212056-6ab996d90449 h1:cutki2SQWGyqg8Y3s5zzKsBhXc07kPSfKvAXgmwuyo8=
 github.com/SeerUK/minecraft-rcon v0.0.0-20190221212056-6ab996d90449/go.mod h1:CdC17HvLH2RDD4xnEAMfKUvpX65zxUZmuGXMY7OKzBY=
+github.com/bicomsystems/go-libzfs v0.2.2-0.20190807094932-e50663fa5901 h1:+aBHo0MRYykwJKlV35t/PpU+P4LAgxaAUQKKWueHWlg=
+github.com/bicomsystems/go-libzfs v0.2.2-0.20190807094932-e50663fa5901/go.mod h1:2jgYYnMnlA5q/vTJe5ax/e+kwYxYkwx8m9XaHA4BwvM=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/dsnet/compress v0.0.1 h1:PlZu0n3Tuv04TzpfPbrnI0HW/YwodEXDS+oPKahKF0Q=
