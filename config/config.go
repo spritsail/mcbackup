@@ -17,6 +17,8 @@ type Options struct {
 	BackupFormat string `long:"date-format" description:"Format for snapshot names (see date(1))" env:"BACKUP_FORMAT" default:"%F-%H:%M"`
 	LogLevel     string `short:"l" long:"level" description:"log level verbosity" env:"LOG_LEVEL" choice:"warn" choice:"info" choice:"debug" choice:"trace" default:"info"`
 
+	MetricsAddr string `short:"m" long:"metrics" description:"Address to serve Prometheus metrics from, or disabled if unspecified" env:"METRICS_ADDR"`
+
 	Cron struct {
 		Prune
 		CronSchedule string `short:"s" long:"cron-schedule" description:"Cron-like schedule to run backups on" env:"CRON_SCHEDULE" default:"*/15 * * * *"`

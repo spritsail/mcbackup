@@ -8,6 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spritsail/mcbackup/config"
 	"github.com/spritsail/mcbackup/mcbackup"
+	"github.com/spritsail/mcbackup/prometheus"
 	"github.com/spritsail/mcbackup/provider"
 	"github.com/x-cray/logrus-prefixed-formatter"
 )
@@ -82,6 +83,17 @@ func main() {
 		log.Error(err)
 		parser.WriteHelp(os.Stdout)
 		os.Exit(1)
+	}
+
+	if opts.MetricsAddr != "" {
+		go func(opts config.Options, prov provider.Provider) {
+			for {
+				err := prometheus.Serve(opts.MetricsAddr, opts, prov)
+				log.WithError(err).
+					Error("error serving metrics")
+				time.Sleep(time.Second)
+			}
+		}(opts, prov)
 	}
 
 	log.Debug("creating client")
