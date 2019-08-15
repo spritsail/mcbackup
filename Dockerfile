@@ -19,7 +19,7 @@ RUN go build \
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-FROM spritsail/alpine:3.9
+FROM spritsail/alpine:3.10
 
 ARG MCBACKUP_VER
 LABEL maintainer="Spritsail <mcbackup@spritsail.io>" \
