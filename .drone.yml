@@ -1,21 +1,38 @@
-pipeline:
-  build:
-    image: spritsail/docker-build
-    volumes: [ '/var/run/docker.sock:/var/run/docker.sock' ]
-    repo: mcbackup-dev
+---
+kind: pipeline
+name: default
 
-  publish:
-    image: spritsail/docker-publish
-    volumes: [ '/var/run/docker.sock:/var/run/docker.sock' ]
-    secrets: [ docker_username, docker_password ]
-    when: { branch: [ master ], event: [ push, tag, deployment ] }
-    from: mcbackup-dev
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: build
+  pull: always
+  image: spritsail/docker-build
+  settings:
+    repo: spritsail/mcbackup
+
+- name: publish
+  pull: always
+  image: spritsail/docker-publish
+  settings:
     repo: spritsail/mcbackup
     tags:
-      - 'latest'
-      - '%label org.label-schema.version | %auto'
+    - latest
+    - "%label org.label-schema.version | %auto"
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+  when:
+    branch:
+    - master
+    event:
+    - push
 
-  notify:
-    image: spritsail/notify
-    when: { status: [ success, failure ] }
-    secrets: [ webhook_url, notify_token ]
+---
+kind: signature
+hmac: 9215da3b4b225e69c92c368d7f9554d2854cc8c9e017a30c6fad380570fcd265
+
+...
