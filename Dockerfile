@@ -1,4 +1,4 @@
-ARG MCBACKUP_VER=0.2.0
+ARG MCBACKUP_VER=0.2.1
 
 FROM golang:alpine3.11
 

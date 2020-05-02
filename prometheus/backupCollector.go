@@ -3,7 +3,9 @@ package prometheus
 import (
 	"fmt"
 	"sort"
+	"time"
 
+	"github.com/gorhill/cronexpr"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spritsail/mcbackup/config"
 	"github.com/spritsail/mcbackup/provider"
@@ -11,10 +13,12 @@ import (
 
 type BackupCollector struct {
 	Provider provider.Provider
+	Interval time.Duration
 
-	backupLatest *prometheus.Desc
-	backupOldest *prometheus.Desc
-	backupCount  *prometheus.Desc
+	backupLatest   *prometheus.Desc
+	backupOldest   *prometheus.Desc
+	backupCount    *prometheus.Desc
+	backupInterval *prometheus.Desc
 }
 
 func newBackupCollector(prov provider.Provider, opts config.Options) BackupCollector {
@@ -23,8 +27,17 @@ func newBackupCollector(prov provider.Provider, opts config.Options) BackupColle
 		"provider": opts.Provider,
 	}
 
+	// Hacky nonsense to work out a rough interval for a cron expression
+	// It would definitely be easier to use a fixed interval to begin with 🤷
+	var interval time.Duration = 0
+	if opts.Cron.CronSchedule != "" {
+		next := cronexpr.MustParse(opts.Cron.CronSchedule).NextN(time.Now(), 2)
+		interval = next[1].Sub(next[0])
+	}
+
 	return BackupCollector{
 		Provider: prov,
+		Interval: interval,
 
 		backupLatest: prometheus.NewDesc("mcbackup_backup_latest",
 			"Unix timestamp of the last successful backup",
@@ -38,6 +51,10 @@ func newBackupCollector(prov provider.Provider, opts config.Options) BackupColle
 			"Number of backups stored in total",
 			nil, labels,
 		),
+		backupInterval: prometheus.NewDesc("mcbackup_backup_interval",
+			"Interval between backups",
+			nil, labels,
+		),
 	}
 }
 
@@ -45,6 +62,9 @@ func (b BackupCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- b.backupLatest
 	ch <- b.backupOldest
 	ch <- b.backupCount
+	if b.Interval != 0 {
+		ch <- b.backupInterval
+	}
 }
 
 func (b BackupCollector) Collect(ch chan<- prometheus.Metric) {
@@ -61,8 +81,11 @@ func (b BackupCollector) Collect(ch chan<- prometheus.Metric) {
 	oldest := backups[0]
 
 	ch <- prometheus.MustNewConstMetric(b.backupLatest, prometheus.CounterValue, float64(latest.When().Unix()))
-	ch <- prometheus.MustNewConstMetric(b.backupOldest, prometheus.GaugeValue, float64(oldest.When().Unix()))
+	ch <- prometheus.MustNewConstMetric(b.backupOldest, prometheus.CounterValue, float64(oldest.When().Unix()))
 	ch <- prometheus.MustNewConstMetric(b.backupCount, prometheus.GaugeValue, float64(len(backups)))
+	if b.Interval != 0 {
+		ch <- prometheus.MustNewConstMetric(b.backupInterval, prometheus.GaugeValue, b.Interval.Seconds())
+	}
 }
 
 var _ prometheus.Collector = BackupCollector{}
