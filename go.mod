@@ -1,6 +1,6 @@
 module github.com/spritsail/mcbackup
 
-go 1.12
+go 1.16
 
 require (
 	github.com/SeerUK/minecraft-rcon v0.0.0-20190221212056-6ab996d90449
