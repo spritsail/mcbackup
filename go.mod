@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/SeerUK/minecraft-rcon v0.0.0-20190221212056-6ab996d90449
-	github.com/bicomsystems/go-libzfs v0.3.3
+	github.com/bicomsystems/go-libzfs v0.3.4-0.20210120103208-f957d22f5c47
 	github.com/dsnet/compress v0.0.1 // indirect
 	github.com/dustin/go-humanize v1.0.0
 	github.com/frankban/quicktest v1.4.1 // indirect
