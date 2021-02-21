@@ -1,6 +1,6 @@
 ARG MCBACKUP_VER=0.2.1
 
-FROM golang:alpine3.11
+FROM golang:alpine3.13
 
 ARG GO111MODULE=on
 WORKDIR /go/src/github.com/spritsail/mcbackup
@@ -19,7 +19,7 @@ RUN go build \
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-FROM spritsail/alpine:3.11
+FROM spritsail/alpine:3.13
 
 ARG MCBACKUP_VER
 LABEL maintainer="Spritsail <mcbackup@spritsail.io>" \
