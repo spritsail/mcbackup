@@ -10,8 +10,6 @@ steps:
 - name: build
   pull: always
   image: spritsail/docker-build
-  settings:
-    repo: spritsail/mcbackup
 
 - name: publish
   pull: always
@@ -21,10 +19,7 @@ steps:
     tags:
     - latest
     - "%label org.label-schema.version | %auto"
-    username:
-      from_secret: docker_username
-    password:
-      from_secret: docker_password
+    login: {from_secret: docker_login}
   when:
     branch:
     - master
